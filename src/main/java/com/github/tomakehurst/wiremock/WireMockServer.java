@@ -95,7 +95,8 @@ public class WireMockServer implements Container, LocalStubbing, Admin {
                                 options.proxyVia(),
                                 options.httpsSettings().trustStore(),
                                 options.shouldPreserveHostHeader(),
-                                options.proxyHostHeader()
+                                options.proxyHostHeader(),
+                                options.poolConnections()
                         ),
                         ImmutableList.copyOf(options.extensionsOfType(ResponseTransformer.class).values()))
         );
@@ -145,7 +146,7 @@ public class WireMockServer implements Container, LocalStubbing, Admin {
     public WireMockServer() {
 		this(wireMockConfig());
 	}
-	
+
 	public void loadMappingsUsing(final MappingsLoader mappingsLoader) {
         wireMockApp.loadMappingsUsing(mappingsLoader);
 	}
@@ -157,7 +158,7 @@ public class WireMockServer implements Container, LocalStubbing, Admin {
     public void addMockServiceRequestListener(RequestListener listener) {
 		stubRequestHandler.addRequestListener(listener);
 	}
-	
+
 	public void enableRecordMappings(FileSource mappingsFileSource, FileSource filesFileSource) {
 	    addMockServiceRequestListener(
                 new StubMappingJsonRecorder(mappingsFileSource, filesFileSource, wireMockApp, options.matchingHeaders()));
@@ -167,7 +168,7 @@ public class WireMockServer implements Container, LocalStubbing, Admin {
     public void stop() {
         httpServer.stop();
 	}
-	
+
 	public void start() {
         try {
 		    httpServer.start();

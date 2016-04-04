@@ -58,6 +58,7 @@ public class WireMockConfiguration implements Options {
 
     private boolean preserveHostHeader;
     private String proxyHostHeader;
+    private boolean poolConnections = true;
     private HttpServerFactory httpServerFactory = new JettyHttpServerFactory();
     private Integer jettyAcceptors;
     private Integer jettyAcceptQueueSize;
@@ -95,6 +96,11 @@ public class WireMockConfiguration implements Options {
 
     public WireMockConfiguration containerThreads(Integer containerThreads) {
         this.containerThreads = containerThreads;
+        return this;
+    }
+
+    public WireMockConfiguration poolConnections(boolean poolConnections) {
+        this.poolConnections = poolConnections;
         return this;
     }
 
@@ -306,6 +312,11 @@ public class WireMockConfiguration implements Options {
     @Override
     public String proxyHostHeader() {
         return proxyHostHeader;
+    }
+
+    @Override
+    public boolean poolConnections() {
+        return poolConnections;
     }
 
     @Override

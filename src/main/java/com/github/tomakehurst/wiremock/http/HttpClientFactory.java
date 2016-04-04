@@ -24,6 +24,8 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.DefaultConnectionReuseStrategy;
+import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import javax.net.ssl.SSLContext;
@@ -40,7 +42,7 @@ public class HttpClientFactory {
     public static final int DEFAULT_MAX_CONNECTIONS = 50;
 
     public static HttpClient createClient(
-            int maxConnections, int timeoutMilliseconds, ProxySettings proxySettings, KeyStoreSettings trustStoreSettings) {
+            int maxConnections, int timeoutMilliseconds, ProxySettings proxySettings, KeyStoreSettings trustStoreSettings, boolean poolConnections) {
 
         HttpClientBuilder builder = HttpClientBuilder.create()
                 .disableAuthCaching()
@@ -50,7 +52,10 @@ public class HttpClientFactory {
                 .disableContentCompression()
                 .setMaxConnTotal(maxConnections)
                 .setDefaultSocketConfig(SocketConfig.custom().setSoTimeout(timeoutMilliseconds).build())
-                .setHostnameVerifier(new AllowAllHostnameVerifier());
+                .setHostnameVerifier(new AllowAllHostnameVerifier())
+                .setConnectionReuseStrategy(poolConnections
+                        ? new DefaultConnectionReuseStrategy()
+                        : new NoConnectionReuseStrategy());
 
         if (proxySettings != NO_PROXY) {
             HttpHost proxyHost = new HttpHost(proxySettings.host(), proxySettings.port());
@@ -93,13 +98,13 @@ public class HttpClientFactory {
     }
 
     public static HttpClient createClient(int maxConnections, int timeoutMilliseconds) {
-        return createClient(maxConnections, timeoutMilliseconds, NO_PROXY, NO_STORE);
+        return createClient(maxConnections, timeoutMilliseconds, NO_PROXY, NO_STORE, true);
     }
-	
+
 	public static HttpClient createClient(int timeoutMilliseconds) {
 		return createClient(DEFAULT_MAX_CONNECTIONS, timeoutMilliseconds);
 	}
-	
+
 	public static HttpClient createClient() {
 		return createClient(30000);
 	}

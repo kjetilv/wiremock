@@ -54,7 +54,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 public class CommandLineOptions implements Options {
-	
+
 	private static final String HELP = "help";
 	private static final String RECORD_MAPPINGS = "record-mappings";
 	private static final String MATCH_HEADERS = "match-headers";
@@ -72,6 +72,7 @@ public class CommandLineOptions implements Options {
     private static final String VERBOSE = "verbose";
     private static final String ENABLE_BROWSER_PROXYING = "enable-browser-proxying";
     private static final String DISABLE_REQUEST_JOURNAL = "no-request-journal";
+    private static final String DISABLE_CONNECTION_POOL = "no-connection-pool";
     private static final String EXTENSIONS = "extensions";
     private static final String MAX_ENTRIES_REQUEST_JOURNAL = "max-request-journal-entries";
     private static final String JETTY_ACCEPTOR_THREAD_COUNT = "jetty-acceptor-threads";
@@ -103,13 +104,14 @@ public class CommandLineOptions implements Options {
 		optionParser.accepts(VERBOSE, "Enable verbose logging to stdout");
 		optionParser.accepts(ENABLE_BROWSER_PROXYING, "Allow wiremock to be set as a browser's proxy server");
         optionParser.accepts(DISABLE_REQUEST_JOURNAL, "Disable the request journal (to avoid heap growth when running wiremock for long periods without reset)");
+        optionParser.accepts(DISABLE_CONNECTION_POOL, "Disable connection pooling (to try working around any nasty network issues)");
         optionParser.accepts(EXTENSIONS, "Matching and/or response transformer extension class names, comma separated.").withRequiredArg();
         optionParser.accepts(MAX_ENTRIES_REQUEST_JOURNAL, "Set maximum number of entries in request journal (if enabled) to discard old entries if the log becomes too large. Default: no discard").withRequiredArg();
         optionParser.accepts(JETTY_ACCEPTOR_THREAD_COUNT, "Number of Jetty acceptor threads").withRequiredArg();
         optionParser.accepts(JETTY_ACCEPT_QUEUE_SIZE, "The size of Jetty's accept queue size").withRequiredArg();
         optionParser.accepts(JETTY_HEADER_BUFFER_SIZE, "The size of Jetty's buffer for request headers").withRequiredArg();
         optionParser.accepts(HELP, "Print this message");
-		
+
 		optionSet = optionParser.parse(args);
         validate();
 		captureHelpTextIfRequested(optionParser);
@@ -133,19 +135,19 @@ public class CommandLineOptions implements Options {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			
+
 			helpText = out.toString();
 		}
 	}
-	
+
 	public boolean verboseLoggingEnabled() {
 		return optionSet.has(VERBOSE);
 	}
-	
+
 	public boolean recordMappingsEnabled() {
 		return optionSet.has(RECORD_MAPPINGS);
 	}
-	
+
 	@Override
 	public List<CaseInsensitiveKey> matchingHeaders() {
 		if (optionSet.hasArgument(MATCH_HEADERS)) {
@@ -173,7 +175,7 @@ public class CommandLineOptions implements Options {
     private boolean specifiesPortNumber() {
 		return optionSet.has(PORT);
 	}
-	
+
 	@Override
     public int portNumber() {
         if (specifiesPortNumber()) {
@@ -232,7 +234,7 @@ public class CommandLineOptions implements Options {
     public boolean help() {
 		return optionSet.has(HELP);
 	}
-	
+
 	public String helpText() {
 		return helpText;
 	}
@@ -253,6 +255,11 @@ public class CommandLineOptions implements Options {
     @Override
     public String proxyHostHeader() {
        return optionSet.hasArgument(PROXY_ALL) ? URI.create((String) optionSet.valueOf(PROXY_ALL)).getAuthority() : null;
+    }
+
+    @Override
+    public boolean poolConnections() {
+        return !optionSet.has(DISABLE_CONNECTION_POOL);
     }
 
     @Override

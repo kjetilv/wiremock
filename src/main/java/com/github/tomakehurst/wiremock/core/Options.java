@@ -51,6 +51,7 @@ public interface Options {
     List<CaseInsensitiveKey> matchingHeaders();
     public boolean shouldPreserveHostHeader();
     String proxyHostHeader();
+    boolean poolConnections();
     HttpServerFactory httpServerFactory();
     <T extends Extension> Map<String, T> extensionsOfType(Class<T> extensionType);
 }
